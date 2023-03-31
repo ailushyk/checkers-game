@@ -1,16 +1,13 @@
-import CheckersGame from '@/app/checkers/CheckersGame'
-import Board from '@/app/checkers/Board'
+import { CheckersBoard } from '@/app/checkers/CheckersBoard'
 
 export default function CheckersPage(params: { params: {} }) {
   return (
     <div>
       <h1>Checkers Game</h1>
-      <CheckersGame>
-        <div>
-          <h2>Checkers Board</h2>
-          <Board></Board>
-        </div>
-      </CheckersGame>
+      <div>
+        <h2>Checkers Board</h2>
+        <CheckersBoard />
+      </div>
     </div>
   )
 }
