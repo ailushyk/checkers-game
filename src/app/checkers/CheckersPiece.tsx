@@ -1,15 +1,25 @@
 import React from 'react'
 
-export function CheckersPiece({ type }: CheckersPieceProps) {
+export interface CheckersPieceProps {
+  type: CheckersPieceType
+  isActive?: boolean
+}
+
+export function CheckersPiece({ type, isActive }: CheckersPieceProps) {
   if (type === '') return null
 
-  const backgroundColor =
-    type.toLowerCase() === 'w' ? 'bg-yellow-50' : 'bg-black'
+  let backgroundColor =
+    type.toLowerCase() === 'w'
+      ? 'bg-yellow-50 hover:bg-red-400'
+      : 'bg-gray-900 hover:bg-red-500'
+  let activeBackgroundColor =
+    type.toLowerCase() === 'w' ? 'fill-red-400' : 'fill-red-500'
+
   const isQueen = type === 'W' || type === 'B'
 
   return (
     <div
-      className={`h-8 w-8 rounded-full ${backgroundColor}`}
+      className={`h-8 w-8 cursor-pointer rounded-full transition ${backgroundColor}`}
       style={{
         position: 'relative',
         top: '50%',
@@ -22,7 +32,7 @@ export function CheckersPiece({ type }: CheckersPieceProps) {
           cx="10"
           cy="10"
           r="8"
-          fill={backgroundColor}
+          className={`${isActive ? activeBackgroundColor : backgroundColor}`}
           stroke="#4B5563"
           strokeWidth="2"
         />

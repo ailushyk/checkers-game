@@ -1,5 +1,5 @@
 type CheckersPieceType = 'W' | 'B' | 'w' | 'b' | ''
+type Player = 'w' | 'b'
 
-interface CheckersPieceProps {
-  type: CheckersPieceType
-}
+type CheckersBoardState = CheckersPieceType[][]
+type CheckersPosition = [number, number]
