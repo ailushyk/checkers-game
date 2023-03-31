@@ -1,29 +1,69 @@
 import React from 'react'
 
-function Pawn(props: { square: string }) {
+interface CheckersPieceProps {
+  type: 'w' | 'b' | 'W' | 'B'
+}
+
+function CheckersPiece({ type }: CheckersPieceProps) {
+  const backgroundColor =
+    type.toLowerCase() === 'w' ? 'bg-yellow-50' : 'bg-black'
+  const isQueen = type === 'W' || type === 'B'
+
   return (
     <div
-      className={`h-8 w-8 rounded-full ${
-        props.square === 'w' ? 'bg-yellow-50' : 'bg-black'
-      }`}
+      className={`h-8 w-8 rounded-full ${backgroundColor}`}
       style={{
         position: 'relative',
         top: '50%',
         left: '50%',
         transform: 'translate(-50%, -50%)',
       }}
-    />
+    >
+      {isQueen ? (
+        <svg viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle
+            cx="10"
+            cy="10"
+            r="8"
+            fill={backgroundColor}
+            stroke="#4B5563"
+            strokeWidth="2"
+          />
+          <text
+            x="50%"
+            y="50%"
+            dominantBaseline="middle"
+            textAnchor="middle"
+            fill={type.toLowerCase() === 'w' ? '#4B5563' : '#F9FAFB'}
+            fontSize="14px"
+          >
+            ♕
+          </text>
+        </svg>
+      ) : (
+        <svg viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle
+            cx="10"
+            cy="10"
+            r="8"
+            fill={backgroundColor}
+            stroke="#4B5563"
+            strokeWidth="2"
+          />
+        </svg>
+      )}
+    </div>
   )
 }
 
 function CheckersBoard() {
   const board = [
-    ['', 'b', '', 'b', '', 'b', '', 'b'],
+    ['', 'B', '', 'b', '', 'b', '', 'b'],
     ['b', '', 'b', '', 'b', '', 'b', ''],
     ['', 'b', '', 'b', '', 'b', '', 'b'],
     ['', '', '', '', '', '', '', ''],
     ['', '', '', '', '', '', '', ''],
-    ['w', '', 'w', '', 'w', '', 'w', ''],
+    ['w', '', 'W', '', 'w', '', 'w', ''],
     ['', 'w', '', 'w', '', 'w', '', 'w'],
     ['w', '', 'w', '', 'w', '', 'w', ''],
   ]
@@ -60,7 +100,7 @@ function CheckersBoard() {
                 }`}
                 key={`square-${rowIndex}-${columnIndex}`}
               >
-                {square !== '' && <Pawn square={square} />}
+                {square !== '' && <CheckersPiece type={square} />}
               </div>
             ))}
             <div className="h-10 w-10 text-center text-lg font-bold">
