@@ -1,5 +1,5 @@
 'use client'
-import React, { useState } from 'react'
+import React, { useRef, useState } from 'react'
 import { CheckersPiece } from '@/app/checkers/CheckersPiece'
 import ActivePlayerIndicator from '@/app/checkers/ActivePlayerIndicator'
 import { getPossibleMoves } from '@/app/checkers/getPossibleMoves'
@@ -41,42 +41,45 @@ function CheckersBoardSquare(props: {
 }
 
 export function CheckersBoard() {
-  const [activePlayer, setActivePlayer] = useState<Player>('w')
+  const [activePlayer, setActivePlayer] = useState<Player>('b')
   const [selectedPiece, setSelectedPiece] = useState<[number, number] | null>(
     null,
   )
+  const [isJumping, setIsJumping] = useState<boolean>(false)
+
   const [board, setBoard] = useState<CheckersPieceType[][]>([
     ['', 'b', '', 'b', '', 'b', '', 'b'],
     ['b', '', 'b', '', 'b', '', 'b', ''],
-    ['', 'b', '', '', '', 'b', '', 'b'],
+    ['', 'b', '', 'b', '', 'b', '', 'b'],
     ['', '', '', '', '', '', '', ''],
-    ['', '', '', 'b', '', '', '', ''],
+    ['', '', '', '', '', '', '', ''],
     ['w', '', 'w', '', 'w', '', 'w', ''],
     ['', 'w', '', 'w', '', 'w', '', 'w'],
     ['w', '', 'w', '', 'w', '', 'w', ''],
+    //
+    //
+    // ['', 'b', '', 'b', '', 'b', '', 'B'],
+    // ['', '', 'w', '', '', '', '', ''],
+    // ['', '', '', '', '', '', '', ''],
+    // ['', '', '', '', 'w', '', 'w', ''],
+    // ['', '', '', '', '', '', '', ''],
+    // ['', '', '', '', '', '', '', ''],
+    // ['', 'w', '', 'w', '', '', '', ''],
+    // ['', '', '', '', '', '', '', ''],
   ])
 
   const letters = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
-
-  function makeMove(
-    board: CheckersPieceType[][],
-    selectedPiece: [number, number],
-    targetSquare: [col: number, row: number],
-  ) {
-    const newBoard = board.map((row) => row.slice())
-    const [selectedRow, selectedCol] = selectedPiece
-    const [row, col] = targetSquare
-
-    newBoard[row][col] = newBoard[selectedRow][selectedCol]
-    newBoard[selectedRow][selectedCol] = ''
-
-    return newBoard
-  }
 
   function handleSquareClick(row: number, col: number) {
     // Check if there is a selected piece
     if (selectedPiece) {
       if (isEqual(selectedPiece, [row, col])) {
+        if (isJumping) {
+          setIsJumping(false)
+          setSelectedPiece(null)
+          setActivePlayer(activePlayer === 'w' ? 'b' : 'w')
+          return
+        }
         setSelectedPiece(null)
         return
       }
@@ -85,39 +88,74 @@ export function CheckersBoard() {
       const squaresCopy = [...board]
       const piece = squaresCopy[selectedRow][selectedCol]
       const isKing = piece === 'W' || piece === 'B'
-      const isJump = Math.abs(selectedRow - row) === 2
-      let isJumpMove = false
-
-      if (isJump) {
-        // Check if a jump move is valid
-        const jumpRow = selectedRow + (row - selectedRow) / 2
-        const jumpCol = selectedCol + (col - selectedCol) / 2
-        const jumpedPiece = squaresCopy[jumpRow][jumpCol]
-        if (jumpedPiece === '') {
-          return // Cannot jump over an empty square
-        }
-        if (jumpedPiece.toLowerCase() === activePlayer) {
-          return // Cannot jump over a piece of the same color
-        }
-        squaresCopy[jumpRow][jumpCol] = ''
-        isJumpMove = true
-      }
+      let isJumpDiagonal = false
 
       if (squaresCopy[row][col] !== '') {
+        console.log('Cannot move to a non-empty square')
         return // Cannot move to a non-empty square
       }
 
-      if (!isKing) {
+      if (isKing) {
+        // Check if move is diagonal
+        if (Math.abs(selectedRow - row) !== Math.abs(selectedCol - col)) {
+          console.log('not diagonal')
+          return
+        }
+
+        // check if there are any pieces in the way
+        const rowDir = row < selectedRow ? -1 : 1
+        const colDir = col < selectedCol ? -1 : 1
+        let kRow = selectedRow + rowDir
+        let kCol = selectedCol + colDir
+
+        while (kRow !== row && kCol !== col) {
+          if (squaresCopy[kRow][kCol] !== '') {
+            console.log('piece in the way')
+
+            if (squaresCopy[kRow][kCol].toLowerCase() === activePlayer) {
+              console.log('Cannot jump over a piece of the same color')
+              return
+            }
+
+            squaresCopy[kRow][kCol] = ''
+            // set jumping to true
+            isJumpDiagonal = true
+          }
+          kRow += rowDir
+          kCol += colDir
+        }
+
+        if (isJumping && !isJumpDiagonal) {
+          console.log('Cannot move a piece that is jumping')
+          return
+        }
+      } else {
         // Check if the move is diagonal and only one square away from the starting position
         const rowDiff = row - selectedRow
         const colDiff = col - selectedCol
-        console.log(rowDiff, colDiff)
-        console.log(Math.abs(rowDiff))
-        console.log(Math.abs(colDiff))
-        const isJumpDiagonal =
-          Math.abs(rowDiff) === 2 && Math.abs(colDiff) === 2
-        const isMoveForward =
-          activePlayer === 'w' ? rowDiff === -1 : rowDiff === 1
+        isJumpDiagonal = Math.abs(rowDiff) === 2 && Math.abs(colDiff) === 2
+
+        if (isJumpDiagonal) {
+          // Check if a jump move is valid
+          const jumpRow = selectedRow + (row - selectedRow) / 2
+          const jumpCol = selectedCol + (col - selectedCol) / 2
+          const jumpedPiece = squaresCopy[jumpRow][jumpCol]
+          if (jumpedPiece === '') {
+            console.log('Cannot jump over an empty square')
+            return // Cannot jump over an empty square
+          }
+          if (jumpedPiece.toLowerCase() === activePlayer) {
+            console.log('Cannot jump over a piece of the same color')
+            return // Cannot jump over a piece of the same color
+          }
+          squaresCopy[jumpRow][jumpCol] = ''
+        }
+
+        const isMoveForward = !isJumping
+          ? activePlayer === 'w'
+            ? rowDiff === -1
+            : rowDiff === 1
+          : false
 
         if (!isJumpDiagonal && !isMoveForward) {
           return // Simple pieces can only move one square diagonally forward or backward
@@ -130,7 +168,12 @@ export function CheckersBoard() {
         : piece
 
       setBoard(squaresCopy)
-      if (!isKing) {
+      if (isJumpDiagonal) {
+        setIsJumping(true)
+        setSelectedPiece([row, col])
+      } else {
+        console.log('switching players')
+        setIsJumping(false)
         setSelectedPiece(null)
         setActivePlayer(activePlayer === 'w' ? 'b' : 'w')
       }
