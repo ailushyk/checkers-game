@@ -1,8 +1,7 @@
 'use client'
-import React, { useRef, useState } from 'react'
+import React, { useState } from 'react'
 import { CheckersPiece } from '@/app/checkers/CheckersPiece'
 import ActivePlayerIndicator from '@/app/checkers/ActivePlayerIndicator'
-import { getPossibleMoves } from '@/app/checkers/getPossibleMoves'
 
 function LetterCell(props: { letter: string }) {
   return (
@@ -46,7 +45,10 @@ export function CheckersBoard() {
     null,
   )
   const [isJumping, setIsJumping] = useState<boolean>(false)
-
+  const [capturedPieces, setCapturedPieces] = useState<{
+    w: number
+    b: number
+  }>({ w: 0, b: 0 })
   const [board, setBoard] = useState<CheckersPieceType[][]>([
     // ['', 'b', '', 'b', '', 'b', '', 'b'],
     // ['b', '', 'b', '', 'b', '', 'b', ''],
@@ -68,10 +70,24 @@ export function CheckersBoard() {
     ['', '', '', '', '', '', '', ''],
   ])
 
+  const [counter, setCounter] = useState<number>(0)
+
   const letters = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
 
   function inNewKingRow(row: number, activePlayer: Player) {
     return activePlayer === 'w' ? row === 0 : row === 7
+  }
+
+  function handleCapturedPieces(activePlayer: Player, captured: number) {
+    setCapturedPieces((capturedPieces) => {
+      const newCapturedPieces = { ...capturedPieces }
+      if (activePlayer === 'w') {
+        newCapturedPieces.w += captured
+      } else {
+        newCapturedPieces.b += captured
+      }
+      return newCapturedPieces
+    })
   }
 
   function handleSquareClick(row: number, col: number) {
@@ -79,6 +95,8 @@ export function CheckersBoard() {
     if (selectedPiece) {
       if (isEqual(selectedPiece, [row, col])) {
         if (isJumping) {
+          handleCapturedPieces(activePlayer, counter)
+          setCounter(0)
           setIsJumping(false)
           setSelectedPiece(null)
           setActivePlayer(activePlayer === 'w' ? 'b' : 'w')
@@ -122,6 +140,7 @@ export function CheckersBoard() {
             }
 
             squaresCopy[kRow][kCol] = ''
+            setCounter((counter) => counter + 1)
             // set jumping to true
             isJumpDiagonal = true
           }
@@ -152,6 +171,7 @@ export function CheckersBoard() {
             console.log('Cannot jump over a piece of the same color')
             return // Cannot jump over a piece of the same color
           }
+          setCounter((counter) => counter + 1)
           squaresCopy[jumpRow][jumpCol] = ''
         }
 
@@ -202,6 +222,11 @@ export function CheckersBoard() {
   return (
     <div className="flex h-full w-full flex-col items-center justify-center bg-gray-800">
       <ActivePlayerIndicator activePlayer={activePlayer} />
+      <div className="flex flex-col items-center text-gray-200">
+        <div>White: {capturedPieces.w}</div>
+        <div>Black: {capturedPieces.b}</div>
+        <div>counter: {counter}</div>
+      </div>
       <div className="border-4 border-gray-700 bg-white p-2">
         <div className="flex">
           <div className="w-10"></div>
