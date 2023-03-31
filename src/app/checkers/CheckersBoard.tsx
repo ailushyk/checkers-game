@@ -48,27 +48,31 @@ export function CheckersBoard() {
   const [isJumping, setIsJumping] = useState<boolean>(false)
 
   const [board, setBoard] = useState<CheckersPieceType[][]>([
-    ['', 'b', '', 'b', '', 'b', '', 'b'],
-    ['b', '', 'b', '', 'b', '', 'b', ''],
-    ['', 'b', '', 'b', '', 'b', '', 'b'],
-    ['', '', '', '', '', '', '', ''],
-    ['', '', '', '', '', '', '', ''],
-    ['w', '', 'w', '', 'w', '', 'w', ''],
-    ['', 'w', '', 'w', '', 'w', '', 'w'],
-    ['w', '', 'w', '', 'w', '', 'w', ''],
+    // ['', 'b', '', 'b', '', 'b', '', 'b'],
+    // ['b', '', 'b', '', 'b', '', 'b', ''],
+    // ['', 'b', '', 'b', '', 'b', '', 'b'],
+    // ['', '', '', '', '', '', '', ''],
+    // ['', '', '', '', '', '', '', ''],
+    // ['w', '', 'w', '', 'w', '', 'w', ''],
+    // ['', 'w', '', 'w', '', 'w', '', 'w'],
+    // ['w', '', 'w', '', 'w', '', 'w', ''],
     //
     //
-    // ['', 'b', '', 'b', '', 'b', '', 'B'],
-    // ['', '', 'w', '', '', '', '', ''],
-    // ['', '', '', '', '', '', '', ''],
-    // ['', '', '', '', 'w', '', 'w', ''],
-    // ['', '', '', '', '', '', '', ''],
-    // ['', '', '', '', '', '', '', ''],
-    // ['', 'w', '', 'w', '', '', '', ''],
-    // ['', '', '', '', '', '', '', ''],
+    ['', 'b', '', 'b', '', 'b', '', 'B'],
+    ['', '', 'w', '', '', '', '', ''],
+    ['', '', '', '', '', '', '', ''],
+    ['', '', '', '', 'w', '', 'w', ''],
+    ['', '', '', '', '', '', '', ''],
+    ['', '', '', '', '', '', '', ''],
+    ['', 'w', '', 'w', '', '', '', ''],
+    ['', '', '', '', '', '', '', ''],
   ])
 
   const letters = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
+
+  function inNewKingRow(row: number, activePlayer: Player) {
+    return activePlayer === 'w' ? row === 0 : row === 7
+  }
 
   function handleSquareClick(row: number, col: number) {
     // Check if there is a selected piece
@@ -163,9 +167,10 @@ export function CheckersBoard() {
       }
 
       squaresCopy[selectedRow][selectedCol] = ''
-      squaresCopy[row][col] = isKing
-        ? (piece.toUpperCase() as CheckersPieceType)
-        : piece
+      squaresCopy[row][col] =
+        isKing || inNewKingRow(row, activePlayer)
+          ? (piece.toUpperCase() as CheckersPieceType)
+          : piece
 
       setBoard(squaresCopy)
       if (isJumpDiagonal) {
