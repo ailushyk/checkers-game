@@ -49,8 +49,8 @@ export function CheckersBoard() {
     ['', 'b', '', 'b', '', 'b', '', 'b'],
     ['b', '', 'b', '', 'b', '', 'b', ''],
     ['', 'b', '', '', '', 'b', '', 'b'],
-    ['', '', 'b', '', '', '', '', ''],
     ['', '', '', '', '', '', '', ''],
+    ['', '', '', 'b', '', '', '', ''],
     ['w', '', 'w', '', 'w', '', 'w', ''],
     ['', 'w', '', 'w', '', 'w', '', 'w'],
     ['w', '', 'w', '', 'w', '', 'w', ''],
@@ -81,23 +81,58 @@ export function CheckersBoard() {
         return
       }
 
-      const moves = getPossibleMoves(board, selectedPiece)
-      const targetSquare: [col: number, row: number] = [row, col]
+      const [selectedRow, selectedCol] = selectedPiece
+      const squaresCopy = [...board]
+      const piece = squaresCopy[selectedRow][selectedCol]
+      const isKing = piece === 'W' || piece === 'B'
+      const isJump = Math.abs(selectedRow - row) === 2
+      let isJumpMove = false
 
-      // Check if the selected piece can move to the target square
-      console.log(moves)
-      console.log(selectedPiece)
-      console.log(targetSquare)
-      if (moves.some((move) => isEqual(move, targetSquare))) {
-        const newBoard = makeMove(board, selectedPiece, targetSquare)
+      if (isJump) {
+        // Check if a jump move is valid
+        const jumpRow = selectedRow + (row - selectedRow) / 2
+        const jumpCol = selectedCol + (col - selectedCol) / 2
+        const jumpedPiece = squaresCopy[jumpRow][jumpCol]
+        if (jumpedPiece === '') {
+          return // Cannot jump over an empty square
+        }
+        if (jumpedPiece.toLowerCase() === activePlayer) {
+          return // Cannot jump over a piece of the same color
+        }
+        squaresCopy[jumpRow][jumpCol] = ''
+        isJumpMove = true
+      }
 
-        // Set the new board in state
-        setBoard(newBoard)
+      if (squaresCopy[row][col] !== '') {
+        return // Cannot move to a non-empty square
+      }
+
+      if (!isKing) {
+        // Check if the move is diagonal and only one square away from the starting position
+        const rowDiff = row - selectedRow
+        const colDiff = col - selectedCol
+        console.log(rowDiff, colDiff)
+        console.log(Math.abs(rowDiff))
+        console.log(Math.abs(colDiff))
+        const isJumpDiagonal =
+          Math.abs(rowDiff) === 2 && Math.abs(colDiff) === 2
+        const isMoveForward =
+          activePlayer === 'w' ? rowDiff === -1 : rowDiff === 1
+
+        if (!isJumpDiagonal && !isMoveForward) {
+          return // Simple pieces can only move one square diagonally forward or backward
+        }
+      }
+
+      squaresCopy[selectedRow][selectedCol] = ''
+      squaresCopy[row][col] = isKing
+        ? (piece.toUpperCase() as CheckersPieceType)
+        : piece
+
+      setBoard(squaresCopy)
+      if (!isKing) {
         setSelectedPiece(null)
         setActivePlayer(activePlayer === 'w' ? 'b' : 'w')
-      } else {
-        // Invalid move
-        console.log('Invalid move')
       }
     } else {
       // Check if there is a piece on the selected square
