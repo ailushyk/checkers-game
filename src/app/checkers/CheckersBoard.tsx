@@ -157,12 +157,14 @@ export function CheckersBoard() {
 
         const isMoveForward = !isJumping
           ? activePlayer === 'w'
-            ? rowDiff === -1
-            : rowDiff === 1
+            ? rowDiff === -1 && Math.abs(colDiff) === 1
+            : rowDiff === 1 && Math.abs(colDiff) === 1
           : false
 
         if (!isJumpDiagonal && !isMoveForward) {
-          return // Simple pieces can only move one square diagonally forward or backward
+          // Simple pieces can only move one square diagonally forward
+          //  or jump diagonally forward or backward over an opponent's piece
+          return
         }
       }
 
